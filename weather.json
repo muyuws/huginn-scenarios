@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "name": "weather",
+  "description": "No description provided",
+  "source_url": false,
+  "guid": "a165da6ba4db86a188ba1fac9f2ee7e1",
+  "tag_fg_color": "#ffffff",
+  "tag_bg_color": "#009aff",
+  "icon": "cloud",
+  "exported_at": "2017-10-29T15:20:23Z",
+  "agents": [
+    {
+      "type": "Agents::WeatherAgent",
+      "name": "gz weather",
+      "disabled": false,
+      "guid": "303695ddca353afd83b2abcc9106d796",
+      "options": {
+        "service": "wunderground",
+        "api_key": "{% credential wunderground_key %}",
+        "location": "23.1374,113.3452",
+        "which_day": "1",
+        "language": "CN",
+        "expected_update_period_in_days": "2"
+      },
+      "schedule": "every_5h",
+      "keep_events_for": 604800
+    },
+    {
+      "type": "Agents::SlackAgent",
+      "name": "Weather slack push ",
+      "disabled": false,
+      "guid": "a56fda0936b861e5a12609879724402c",
+      "options": {
+        "webhook_url": "{% credential slack_hook %}",
+        "channel": "#weather",
+        "username": "Huginn",
+        "message": "{{message}}",
+        "icon": ""
+      },
+      "propagate_immediately": true
+    },
+    {
+      "type": "Agents::TriggerAgent",
+      "name": "Weather info digest",
+      "disabled": false,
+      "guid": "eaf19372c3bd1b4d8d177964a27bfa7e",
+      "options": {
+        "expected_receive_period_in_days": "2",
+        "keep_event": "false",
+        "rules": [
+          {
+            "type": "field!=value",
+            "value": "0",
+            "path": "title"
+          }
+        ],
+        "message": "{{title}}天气： {{conditions}}，气温从{{low.celsius}} ℃到{{high.celsius}}℃，吹{{avewind.dir}}风，平均风速{{avewind.kph}}km/h，平均湿度{{avehumidity}}%，降水概率{{pop}}%"
+      },
+      "keep_events_for": 604800,
+      "propagate_immediately": true
+    }
+  ],
+  "links": [
+    {
+      "source": 0,
+      "receiver": 2
+    },
+    {
+      "source": 2,
+      "receiver": 1
+    }
+  ],
+  "control_links": [
+
+  ]
+}
