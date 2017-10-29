@@ -1,0 +1,196 @@
+{
+  "schema_version": 1,
+  "name": "News-stream",
+  "description": "No description provided",
+  "source_url": false,
+  "guid": "baaa243f76a7e0392b8399411fc8dfa2",
+  "tag_fg_color": "#ffffff",
+  "tag_bg_color": "#02e88c",
+  "icon": "star",
+  "exported_at": "2017-10-29T14:59:03Z",
+  "agents": [
+    {
+      "type": "Agents::TriggerAgent",
+      "name": "Filter-rss",
+      "disabled": false,
+      "guid": "0cdea0879d005e8113e707079d52c175",
+      "options": {
+        "expected_receive_period_in_days": "2",
+        "keep_event": "false",
+        "rules": [
+          {
+            "type": "regex",
+            "value": "VPS|vps|Vps|服务器监控|Huginn|SSD|硬盘|一加",
+            "path": "content"
+          }
+        ],
+        "message": {
+          "words": "News from {{authors}} : {{title}}  Link is {{urls}}",
+          "categories": "{{categories}}",
+          "authors": "{{authors}}"
+        }
+      },
+      "keep_events_for": 86400,
+      "propagate_immediately": true
+    },
+    {
+      "type": "Agents::EventFormattingAgent",
+      "name": "Formatting-to-push",
+      "disabled": false,
+      "guid": "1547fef08975f0473f3c698803ab8030",
+      "options": {
+        "instructions": {
+          "message": {
+            "words": "News from {{final.authors}} : {{title}}  Link is {{urls}}",
+            "categories": "{{categories}}"
+          },
+          "authors": "{{final.authors}}"
+        },
+        "matchers": [
+          {
+            "path": "{{categories}}",
+            "regexp": "(?<tags>Vps|服务器监控|vps|VPS|Huginn)",
+            "to": "message"
+          },
+          {
+            "path": "{{authors}}",
+            "regexp": "(?<authors>[0-9]+[a-z]+|[A-Z]+[a-z]+)",
+            "to": "final"
+          }
+        ],
+        "mode": "clean"
+      },
+      "keep_events_for": 86400,
+      "propagate_immediately": true
+    },
+    {
+      "type": "Agents::EventFormattingAgent",
+      "name": "Formatting-to-push (2)",
+      "disabled": false,
+      "guid": "4cb524c85e3c0b81bf0905eb7c1b8493",
+      "options": {
+        "instructions": {
+          "message": {
+            "words": "{{message.words}}",
+            "categories": "{{message.categories}}"
+          },
+          "authors": "{{final.authors}}"
+        },
+        "matchers": [
+          {
+            "path": "{{message.categories}}",
+            "regexp": "(?<tags>Vps|服务器监控|vps|VPS|Huginn)",
+            "to": "message"
+          },
+          {
+            "path": "{{message.authors}}",
+            "regexp": "(?<authors>[0-9]+[a-z]+|[A-Z]+[a-z]+|[a-z]+)",
+            "to": "final"
+          }
+        ],
+        "mode": "clean"
+      },
+      "keep_events_for": 86400,
+      "propagate_immediately": true
+    },
+    {
+      "type": "Agents::RssAgent",
+      "name": "rss-from-trusted-sources",
+      "disabled": false,
+      "guid": "9ef9a7f11f3e4dbe1052162238d6f68b",
+      "options": {
+        "expected_update_period_in_days": "5",
+        "clean": "false",
+        "url": [
+          "https://liyuans.com/feed",
+          "https://91yun.co/feed",
+          "https://wzfou.com/feed/"
+        ]
+      },
+      "schedule": "every_30m",
+      "keep_events_for": 86400
+    },
+    {
+      "type": "Agents::RssAgent",
+      "name": "rss-from-untrusted-sources",
+      "disabled": false,
+      "guid": "be527c1c5037f97b7b4332af7ed93ee1",
+      "options": {
+        "expected_update_period_in_days": "5",
+        "clean": "false",
+        "url": [
+          "http://rss.cnbeta.com/",
+          "http://rss.mydrivers.com/rss.aspx?Tid=1"
+        ],
+        "user_agent": "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"
+      },
+      "schedule": "every_30m",
+      "keep_events_for": 86400
+    },
+    {
+      "type": "Agents::EventFormattingAgent",
+      "name": "Generating-push",
+      "disabled": false,
+      "guid": "caf8db28edd1ddda6e158f54c16e42d1",
+      "options": {
+        "instructions": {
+          "message": "{{message.words}} with category: {{message.tags}}",
+          "authors": "{{authors}}{{message.authors}}"
+        },
+        "matchers": [
+          {
+            "path": "{{message.categories}}",
+            "regexp": "(?<tags>Vps|服务器监控|vps|VPS|Huginn)",
+            "to": "message"
+          }
+        ],
+        "mode": "clean"
+      },
+      "keep_events_for": 86400,
+      "propagate_immediately": true
+    },
+    {
+      "type": "Agents::SlackAgent",
+      "name": "Rss slack push",
+      "disabled": false,
+      "guid": "e0fce334134d268baaa89fc2c0650711",
+      "options": {
+        "webhook_url": "https://hooks.slack.com/services/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",
+        "channel": "#rss-news",
+        "username": "{{authors}}",
+        "message": "{{message}}",
+        "icon": ""
+      },
+      "propagate_immediately": true
+    }
+  ],
+  "links": [
+    {
+      "source": 0,
+      "receiver": 2
+    },
+    {
+      "source": 1,
+      "receiver": 5
+    },
+    {
+      "source": 2,
+      "receiver": 5
+    },
+    {
+      "source": 3,
+      "receiver": 1
+    },
+    {
+      "source": 4,
+      "receiver": 0
+    },
+    {
+      "source": 5,
+      "receiver": 6
+    }
+  ],
+  "control_links": [
+
+  ]
+}
